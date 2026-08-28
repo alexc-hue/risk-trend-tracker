@@ -1,0 +1,40 @@
+snapshot_date,risk_id,description,category,probability,impact,status,mitigation_due_date
+2026-03-01,R01,Long-lead equipment delay,Procurement,3,4,Open,2026-05-01
+2026-04-01,R01,Long-lead equipment delay,Procurement,3,4,Mitigating,2026-05-01
+2026-05-01,R01,Long-lead equipment delay,Procurement,4,5,Mitigating,2026-05-01
+2026-06-01,R01,Long-lead equipment delay,Procurement,4,5,Mitigating,2026-05-01
+2026-07-01,R01,Long-lead equipment delay,Procurement,4,5,Open,2026-05-01
+2026-08-01,R01,Long-lead equipment delay,Procurement,4,5,Open,2026-05-01
+2026-03-01,R02,Site geotechnical conditions differ from survey,Design,3,4,Open,2026-05-01
+2026-04-01,R02,Site geotechnical conditions differ from survey,Design,3,4,Mitigating,2026-05-01
+2026-05-01,R02,Site geotechnical conditions differ from survey,Design,1,2,Mitigating,2026-05-01
+2026-04-01,R04,Utility interconnection approval delay,Regulatory,2,4,Open,2026-07-01
+2026-05-01,R04,Utility interconnection approval delay,Regulatory,2,4,Open,2026-07-01
+2026-06-01,R04,Utility interconnection approval delay,Regulatory,3,4,Open,2026-07-01
+2026-07-01,R04,Utility interconnection approval delay,Regulatory,3,4,Mitigating,2026-07-01
+2026-08-01,R04,Utility interconnection approval delay,Regulatory,3,4,Mitigating,2026-07-01
+2026-03-01,R06,Currency fluctuation on imported equipment,Commercial,2,2,Open,
+2026-04-01,R06,Currency fluctuation on imported equipment,Commercial,2,2,Open,
+2026-05-01,R06,Currency fluctuation on imported equipment,Commercial,2,2,Open,
+2026-06-01,R06,Currency fluctuation on imported equipment,Commercial,2,2,Open,
+2026-07-01,R06,Currency fluctuation on imported equipment,Commercial,2,2,Open,
+2026-08-01,R06,Currency fluctuation on imported equipment,Commercial,2,2,Open,
+2026-05-01,R07,Client scope creep on control system requirements,Commercial,2,3,Open,
+2026-06-01,R07,Client scope creep on control system requirements,Commercial,3,3,Open,
+2026-07-01,R07,Client scope creep on control system requirements,Commercial,4,4,Open,
+2026-08-01,R07,Client scope creep on control system requirements,Commercial,4,4,Open,
+2026-03-01,R08,Site safety incident risk during peak construction,HSE,3,5,Open,
+2026-04-01,R08,Site safety incident risk during peak construction,HSE,3,5,Mitigating,
+2026-05-01,R08,Site safety incident risk during peak construction,HSE,2,5,Mitigating,
+2026-06-01,R08,Site safety incident risk during peak construction,HSE,2,4,Mitigating,
+2026-07-01,R08,Site safety incident risk during peak construction,HSE,1,4,Mitigating,
+2026-08-01,R08,Site safety incident risk during peak construction,HSE,1,4,Mitigating,
+2026-06-01,R09,Commissioning test equipment availability,Commissioning,2,4,Open,2026-08-01
+2026-07-01,R09,Commissioning test equipment availability,Commissioning,2,4,Mitigating,2026-08-01
+2026-08-01,R09,Commissioning test equipment availability,Commissioning,1,3,Mitigating,2026-08-01
+2026-03-01,R10,Cost overrun on rework from civil delay,Commercial,3,3,Open,2026-06-01
+2026-04-01,R10,Cost overrun on rework from civil delay,Commercial,3,3,Mitigating,2026-06-01
+2026-05-01,R10,Cost overrun on rework from civil delay,Commercial,4,4,Mitigating,2026-06-01
+2026-06-01,R10,Cost overrun on rework from civil delay,Commercial,4,4,Mitigating,2026-06-01
+2026-07-01,R10,Cost overrun on rework from civil delay,Commercial,4,4,Mitigating,2026-06-01
+2026-08-01,R10,Cost overrun on rework from civil delay,Commercial,4,4,Mitigating,2026-06-01
