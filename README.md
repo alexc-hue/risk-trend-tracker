@@ -12,6 +12,8 @@ Part of a small project-controls toolkit:
 [change-control-register](https://github.com/alexc-hue/change-control-register),
 **risk-trend-tracker** (this repo).
 
+![Exposure trend](assets/exposure_trend.png)
+
 ## Problem
 
 A risk matrix at a single point in time tells you how bad things look right
@@ -26,6 +28,9 @@ compare before-and-after.
 - Model the risk register as a panel: one row per (risk, snapshot date),
   so the same risk can appear across several monthly reports with different
   probability/impact/status as it evolves, and drop out once resolved.
+  Probability × impact scoring and mitigation ownership follow standard
+  project risk management practice, not a formal ISO 31000 process
+  implementation.
 - Compute total portfolio exposure at each snapshot date, a trend line, not
   a single number.
 - For each risk, compare its first and latest recorded exposure and
