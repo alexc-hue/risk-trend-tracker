@@ -10,7 +10,8 @@ Part of a small project-controls toolkit:
 [project-controls-dashboard](https://github.com/alexc-hue/project-controls-dashboard),
 [schedule-health-analyzer](https://github.com/alexc-hue/schedule-health-analyzer),
 [change-control-register](https://github.com/alexc-hue/change-control-register),
-**risk-trend-tracker** (this repo).
+**risk-trend-tracker** (this repo),
+[project-controls-reporting-engine](https://github.com/alexc-hue/project-controls-reporting-engine).
 
 ![Exposure trend](assets/exposure_trend.png)
 
