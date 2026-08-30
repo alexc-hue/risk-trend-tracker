@@ -1,10 +1,10 @@
 # Risk Trend & Mitigation Tracker
 
-A Python tool that reads a project's risk register as a series of monthly
-snapshots, not a single point-in-time list, and answers the question a
-snapshot can't: is overall risk exposure rising or falling, which specific
-risks are getting worse despite being "in mitigation," and did each
-mitigation actually work once its due date passed.
+Operationalizes risk management as a tracked trend, not a static register.
+Reads a project's risk log as a series of monthly snapshots and answers what
+a single point-in-time view can't: is overall exposure rising or falling,
+which specific risks are getting worse despite being "in mitigation," and
+did each mitigation actually work once its due date passed.
 
 Part of a small project-controls toolkit:
 [project-controls-dashboard](https://github.com/alexc-hue/project-controls-dashboard),
@@ -43,9 +43,11 @@ snapshots on an infrastructure project, deliberately mixed: some genuinely
 improve, one gets marked "Mitigating" while its exposure keeps rising, and
 one is never assigned a mitigation at all and just gets worse.
 
-## Technology
+## Implementation
 
-Python, pandas for the panel/groupby logic, matplotlib for the charts.
+Built in Python so risk trend tracking is a rerunnable calculation instead
+of a manually updated register: pandas for the panel/groupby logic,
+matplotlib for the charts.
 
 ## Result
 
