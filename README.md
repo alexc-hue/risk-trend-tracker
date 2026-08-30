@@ -6,6 +6,12 @@ snapshot can't: is overall risk exposure rising or falling, which specific
 risks are getting worse despite being "in mitigation," and did each
 mitigation actually work once its due date passed.
 
+Part of a small project-controls toolkit:
+[project-controls-dashboard](https://github.com/alexc-hue/project-controls-dashboard),
+[schedule-health-analyzer](https://github.com/alexc-hue/schedule-health-analyzer),
+[change-control-register](https://github.com/alexc-hue/change-control-register),
+**risk-trend-tracker** (this repo).
+
 ## Problem
 
 A risk matrix at a single point in time tells you how bad things look right
