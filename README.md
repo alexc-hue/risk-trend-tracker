@@ -105,6 +105,11 @@ register as a time series instead of a recurring point-in-time exercise.
   own.
 - No risk correlation or portfolio-level concentration analysis (whether
   several worsening risks share a common root cause).
+- Probability and impact scores come from the PMO's own risk assessment
+  process at each snapshot, the tool doesn't generate or validate those
+  scores, only tracks how they move. Meant to sit alongside an existing
+  RAID log or risk register as the trend layer, not replace it as the
+  system of record.
 
 ## Run it
 
