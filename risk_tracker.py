@@ -20,9 +20,40 @@ from src import metrics
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "assets")
 
-TREND_COLORS = {"Worsening": "#C44E52", "Improving": "#55A868",
-                 "Stable": "#8C8C8C", "Closed/Resolved": "#4C72B0"}
-VERDICT_COLORS = {"Effective": "#55A868", "Ineffective": "#C44E52", "Too early to assess": "#8C8C8C"}
+# Standardized chart color system (chart chrome, status scale, categorical series, baseline)
+CHART_BG = "#fcfcfb"
+INK = "#10182b"
+GRID = "#e1e0d9"
+BASELINE = "#3a4d7a"
+SERIES_1 = "#2a78d6"
+STATUS_GOOD = "#0ca30c"
+STATUS_WARNING = "#fab219"
+STATUS_CRITICAL = "#d03b3b"
+
+# Worsening/Stable/Improving is a severity trend, so it takes the status scale.
+# "Closed/Resolved" isn't a severity level (a resolved risk isn't "critical" or
+# "good", it's simply no longer active) so it keeps its own categorical color,
+# same role the old ad-hoc blue played here.
+TREND_COLORS = {"Worsening": STATUS_CRITICAL, "Improving": STATUS_GOOD,
+                 "Stable": STATUS_WARNING, "Closed/Resolved": SERIES_1}
+VERDICT_COLORS = {"Effective": STATUS_GOOD, "Ineffective": STATUS_CRITICAL, "Too early to assess": STATUS_WARNING}
+
+
+def _apply_chrome(fig, axes) -> None:
+    """Apply the standardized chart chrome (background, ink, gridlines) to a figure."""
+    fig.patch.set_facecolor(CHART_BG)
+    if hasattr(axes, "flatten"):
+        axes = axes.flatten().tolist()
+    elif not isinstance(axes, (list, tuple)):
+        axes = [axes]
+    for ax in axes:
+        ax.set_facecolor(CHART_BG)
+        ax.title.set_color(INK)
+        ax.xaxis.label.set_color(INK)
+        ax.yaxis.label.set_color(INK)
+        ax.tick_params(colors=INK)
+        for spine in ax.spines.values():
+            spine.set_color(INK)
 
 
 def print_report(exposure_trend, trajectory, effectiveness, score: dict) -> None:
@@ -62,13 +93,14 @@ def print_report(exposure_trend, trajectory, effectiveness, score: dict) -> None
 def chart_exposure_trend(exposure_trend) -> None:
     fig, ax = plt.subplots(figsize=(9, 5))
     ax.plot(exposure_trend["snapshot_date"].to_numpy(), exposure_trend["total_exposure"].to_numpy(),
-            color="#4C72B0", linewidth=2, marker="o")
+            color=SERIES_1, linewidth=2, marker="o")
     ax.set_ylabel("Total portfolio exposure (sum of probability x impact)")
     ax.set_title("Portfolio Risk Exposure Over Time")
-    ax.grid(alpha=0.3)
+    ax.grid(color=GRID, linewidth=0.6)
+    _apply_chrome(fig, ax)
     fig.autofmt_xdate()
     fig.tight_layout()
-    fig.savefig(os.path.join(ASSETS_DIR, "exposure_trend.png"), dpi=140)
+    fig.savefig(os.path.join(ASSETS_DIR, "exposure_trend.png"), dpi=140, facecolor=CHART_BG)
     plt.close(fig)
 
 
@@ -93,9 +125,10 @@ def chart_trajectory(trajectory) -> None:
     ax.set_title("Per-Risk Trajectory: First vs Latest Exposure")
     handles = [plt.Line2D([0], [0], color=c, linewidth=2, label=k) for k, c in TREND_COLORS.items()]
     ax.legend(handles=handles, loc="upper left", fontsize=8)
-    ax.grid(alpha=0.3, axis="y")
+    ax.grid(color=GRID, linewidth=0.6, axis="y")
+    _apply_chrome(fig, ax)
     fig.tight_layout()
-    fig.savefig(os.path.join(ASSETS_DIR, "trajectory.png"), dpi=140)
+    fig.savefig(os.path.join(ASSETS_DIR, "trajectory.png"), dpi=140, facecolor=CHART_BG)
     plt.close(fig)
 
 
@@ -105,7 +138,7 @@ def chart_effectiveness(effectiveness) -> None:
     x = range(len(ranked))
     width = 0.35
     ax.bar([i - width / 2 for i in x], ranked["avg_exposure_before"], width,
-           label="Avg exposure before due date", color="#8C8C8C")
+           label="Avg exposure before due date", color=BASELINE)
     colors = [VERDICT_COLORS[v] for v in ranked["verdict"]]
     ax.bar([i + width / 2 for i in x], ranked["avg_exposure_after"], width,
            label="Avg exposure after due date", color=colors)
@@ -114,9 +147,10 @@ def chart_effectiveness(effectiveness) -> None:
     ax.set_ylabel("Average exposure")
     ax.set_title("Mitigation Effectiveness (color = verdict on the 'after' bar)")
     ax.legend(fontsize=8)
-    ax.grid(alpha=0.3, axis="y")
+    ax.grid(color=GRID, linewidth=0.6, axis="y")
+    _apply_chrome(fig, ax)
     fig.tight_layout()
-    fig.savefig(os.path.join(ASSETS_DIR, "mitigation_effectiveness.png"), dpi=140)
+    fig.savefig(os.path.join(ASSETS_DIR, "mitigation_effectiveness.png"), dpi=140, facecolor=CHART_BG)
     plt.close(fig)
 
 
