@@ -137,16 +137,18 @@ def chart_effectiveness(effectiveness) -> None:
     fig, ax = plt.subplots(figsize=(9, 5))
     x = range(len(ranked))
     width = 0.35
-    ax.bar([i - width / 2 for i in x], ranked["avg_exposure_before"], width,
-           label="Avg exposure before due date", color=BASELINE)
+    ax.bar([i - width / 2 for i in x], ranked["avg_exposure_before"], width, color=BASELINE)
     colors = [VERDICT_COLORS[v] for v in ranked["verdict"]]
-    ax.bar([i + width / 2 for i in x], ranked["avg_exposure_after"], width,
-           label="Avg exposure after due date", color=colors)
+    ax.bar([i + width / 2 for i in x], ranked["avg_exposure_after"], width, color=colors)
     ax.set_xticks(list(x))
     ax.set_xticklabels(ranked["risk_id"])
     ax.set_ylabel("Average exposure")
     ax.set_title("Mitigation Effectiveness (color = verdict on the 'after' bar)")
-    ax.legend(fontsize=8)
+    ymin, ymax = ax.get_ylim()
+    ax.set_ylim(ymin, ymax * 1.3)  # headroom so the legend doesn't sit on top of the tallest bar
+    handles = [plt.Rectangle((0, 0), 1, 1, color=BASELINE, label="Avg exposure before due date")]
+    handles += [plt.Rectangle((0, 0), 1, 1, color=c, label=k) for k, c in VERDICT_COLORS.items()]
+    ax.legend(handles=handles, loc="upper left", fontsize=8)
     ax.grid(color=GRID, linewidth=0.6, axis="y")
     _apply_chrome(fig, ax)
     fig.tight_layout()
