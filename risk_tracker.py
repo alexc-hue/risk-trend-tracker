@@ -33,10 +33,18 @@ STATUS_CRITICAL = "#d03b3b"
 # Worsening/Stable/Improving is a severity trend, so it takes the status scale.
 # "Closed/Resolved" isn't a severity level (a resolved risk isn't "critical" or
 # "good", it's simply no longer active) so it keeps its own categorical color,
-# same role the old ad-hoc blue played here.
+# same role the old ad-hoc blue played here. "Dropped (Unconfirmed)" is a risk
+# that stopped being reported without the register's status field ever saying
+# it was closed/resolved -- neither a severity reading nor a confirmed closure,
+# so it shares the neutral/needs-attention amber used for "Stable".
 TREND_COLORS = {"Worsening": STATUS_CRITICAL, "Improving": STATUS_GOOD,
-                 "Stable": STATUS_WARNING, "Closed/Resolved": SERIES_1}
-VERDICT_COLORS = {"Effective": STATUS_GOOD, "Ineffective": STATUS_CRITICAL, "Too early to assess": STATUS_WARNING}
+                 "Stable": STATUS_WARNING, "Closed/Resolved": SERIES_1,
+                 "Dropped (Unconfirmed)": STATUS_WARNING}
+# "Held Steady" is the neutral outcome for exposure that neither improved nor
+# worsened -- it shares "Too early to assess"'s amber rather than being forced
+# into "Ineffective".
+VERDICT_COLORS = {"Effective": STATUS_GOOD, "Ineffective": STATUS_CRITICAL,
+                   "Too early to assess": STATUS_WARNING, "Held Steady": STATUS_WARNING}
 
 
 def _apply_chrome(fig, axes) -> None:
@@ -67,6 +75,9 @@ def print_report(exposure_trend, trajectory, effectiveness, score: dict) -> None
     print(f"Total exposure, first snapshot: {score['first_total_exposure']}")
     print(f"Total exposure, latest snapshot: {score['last_total_exposure']} "
           f"({score['exposure_pct_change']:+.1f}%)")
+    print(f"  of which, shared risks only (churn-controlled, {score['shared_risk_count']} risks "
+          f"tracked in both periods): {score['shared_first_exposure']} -> {score['shared_last_exposure']} "
+          f"({score['shared_exposure_pct_change']:+.1f}%) -- this is what the trend score above is based on")
     print(f"Mitigations assessable: {score['assessable_mitigations']}  "
           f"Effective: {score['effective_mitigations']}")
 
@@ -156,6 +167,19 @@ def chart_effectiveness(effectiveness) -> None:
     plt.close(fig)
 
 
+def _escape_md_cell(value) -> str:
+    """Escape/normalize a free-text value so it can't corrupt a markdown table.
+
+    A raw `|` splits into extra columns, a backslash can escape the delimiter
+    that follows it, and embedded newlines break the row onto multiple lines.
+    """
+    if value is None or value != value:  # covers None and NaN (NaN != NaN)
+        return ""
+    text = str(value)
+    text = text.replace("\\", "\\\\").replace("|", "\\|")
+    return text.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
+
+
 def write_report_markdown(exposure_trend, trajectory, effectiveness, score: dict) -> None:
     lines = [
         "# Risk Trend Report",
@@ -170,6 +194,9 @@ def write_report_markdown(exposure_trend, trajectory, effectiveness, score: dict
         f"**Total exposure, first snapshot:** {score['first_total_exposure']}  ",
         f"**Total exposure, latest snapshot:** {score['last_total_exposure']} "
         f"({score['exposure_pct_change']:+.1f}%)  ",
+        f"**Shared risks only (churn-controlled, {score['shared_risk_count']} risks tracked in both "
+        f"periods):** {score['shared_first_exposure']} -> {score['shared_last_exposure']} "
+        f"({score['shared_exposure_pct_change']:+.1f}%) -- basis for the trend score above  ",
         f"**Mitigations assessable:** {score['assessable_mitigations']}   "
         f"**Effective:** {score['effective_mitigations']}",
         "",
@@ -181,7 +208,8 @@ def write_report_markdown(exposure_trend, trajectory, effectiveness, score: dict
     for _, row in trajectory.iterrows():
         lines.append(
             f"| {row['risk_id']} | {row['trend']} | {row['first_exposure']} "
-            f"| {row['last_exposure']} | {row['category']} | {row['description']} |"
+            f"| {row['last_exposure']} | {_escape_md_cell(row['category'])} "
+            f"| {_escape_md_cell(row['description'])} |"
         )
 
     lines += ["", "## Mitigation Effectiveness", "",
@@ -191,7 +219,8 @@ def write_report_markdown(exposure_trend, trajectory, effectiveness, score: dict
         before = f"{row['avg_exposure_before']:.1f}" if row["avg_exposure_before"] == row["avg_exposure_before"] else "n/a"
         after = f"{row['avg_exposure_after']:.1f}" if row["avg_exposure_after"] == row["avg_exposure_after"] else "n/a"
         lines.append(
-            f"| {row['risk_id']} | {row['verdict']} | {before} | {after} | {row['description']} |"
+            f"| {row['risk_id']} | {row['verdict']} | {before} | {after} "
+            f"| {_escape_md_cell(row['description'])} |"
         )
     lines.append("")
 
@@ -207,7 +236,7 @@ def main() -> None:
     latest_snapshot = snapshots["snapshot_date"].max()
     trajectory = metrics.per_risk_trajectory(snapshots, latest_snapshot)
     effectiveness = metrics.mitigation_effectiveness(snapshots)
-    score = metrics.risk_trajectory_score(exposure_trend, effectiveness)
+    score = metrics.risk_trajectory_score(exposure_trend, effectiveness, snapshots)
 
     print_report(exposure_trend, trajectory, effectiveness, score)
 
