@@ -28,14 +28,19 @@ compare before-and-after.
 
 - Model the risk register as a panel: one row per (risk, snapshot date),
   so the same risk can appear across several monthly reports with different
-  probability/impact/status as it evolves, and drop out once resolved.
+  probability/impact/status as it evolves, and drop out of later snapshots.
   Probability × impact scoring and mitigation ownership follow standard
   project risk management practice, not a formal ISO 31000 process
   implementation.
-- Compute total portfolio exposure at each snapshot date, a trend line, not
-  a single number.
+- Compute total portfolio exposure at each snapshot date two ways: the raw
+  total, and a churn-controlled figure restricted to risks present in both
+  the first and latest snapshot, since a portfolio-level total that's really
+  just newly-added risks would misstate whether existing risk is actually
+  getting better or worse.
 - For each risk, compare its first and latest recorded exposure and
-  classify it as Worsening, Improving, Stable, or Closed/Resolved.
+  classify it as Worsening, Improving, Stable, or Dropped (Unconfirmed), a
+  risk missing from later snapshots is flagged as dropped, not assumed
+  resolved, the data doesn't say which.
 - For risks with a stated mitigation due date, compare average exposure in
   the snapshots before that date against the snapshots after it, and call
   the mitigation Effective, Ineffective, or Too early to assess if there's
@@ -60,13 +65,14 @@ matplotlib for the charts.
 ```
 RISK TREND REPORT
 ================================================================
-Risk Trajectory Score: 20.0 / 100
-  - Portfolio exposure trend: 0.0 / 50
-  - Mitigation effectiveness: 20.0 / 50
+Risk Trajectory Score: 35.0 / 100
+  - Portfolio exposure trend: 35.0 / 50
+  - Mitigation effectiveness: 0.0 / 50
 
 Total exposure, first snapshot: 52
 Total exposure, latest snapshot: 75 (+44.2%)
-Mitigations assessable: 5  Effective: 2
+  of which, shared risks only (churn-controlled, 4 risks tracked in both periods): 40 -> 44 (+10.0%) -- this is what the trend score above is based on
+Mitigations assessable: 3  Effective: 0
 ```
 
 A saved copy of this report, including every risk's full trajectory and
