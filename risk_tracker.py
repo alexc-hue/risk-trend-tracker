@@ -14,21 +14,12 @@ Run:
 import os
 
 import matplotlib.pyplot as plt
+import pandas as pd
 
-from src import metrics
+from src import chart_style, metrics
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "assets")
-
-# Standardized chart color system (chart chrome, status scale, categorical series, baseline)
-CHART_BG = "#fcfcfb"
-INK = "#10182b"
-GRID = "#e1e0d9"
-BASELINE = "#3a4d7a"
-SERIES_1 = "#2a78d6"
-STATUS_GOOD = "#0ca30c"
-STATUS_WARNING = "#fab219"
-STATUS_CRITICAL = "#d03b3b"
 
 # Worsening/Stable/Improving is a severity trend, so it takes the status scale.
 # "Closed/Resolved" isn't a severity level (a resolved risk isn't "critical" or
@@ -37,34 +28,22 @@ STATUS_CRITICAL = "#d03b3b"
 # that stopped being reported without the register's status field ever saying
 # it was closed/resolved -- neither a severity reading nor a confirmed closure,
 # so it shares the neutral/needs-attention amber used for "Stable".
-TREND_COLORS = {"Worsening": STATUS_CRITICAL, "Improving": STATUS_GOOD,
-                 "Stable": STATUS_WARNING, "Closed/Resolved": SERIES_1,
-                 "Dropped (Unconfirmed)": STATUS_WARNING}
+TREND_COLORS = {"Worsening": chart_style.STATUS_CRITICAL, "Improving": chart_style.STATUS_GOOD,
+                 "Stable": chart_style.STATUS_WARNING, "Closed/Resolved": chart_style.SERIES_1,
+                 "Dropped (Unconfirmed)": chart_style.STATUS_WARNING}
 # "Held Steady" is the neutral outcome for exposure that neither improved nor
 # worsened -- it shares "Too early to assess"'s amber rather than being forced
 # into "Ineffective".
-VERDICT_COLORS = {"Effective": STATUS_GOOD, "Ineffective": STATUS_CRITICAL,
-                   "Too early to assess": STATUS_WARNING, "Held Steady": STATUS_WARNING}
+VERDICT_COLORS = {"Effective": chart_style.STATUS_GOOD, "Ineffective": chart_style.STATUS_CRITICAL,
+                   "Too early to assess": chart_style.STATUS_WARNING, "Held Steady": chart_style.STATUS_WARNING}
 
 
-def _apply_chrome(fig, axes) -> None:
-    """Apply the standardized chart chrome (background, ink, gridlines) to a figure."""
-    fig.patch.set_facecolor(CHART_BG)
-    if hasattr(axes, "flatten"):
-        axes = axes.flatten().tolist()
-    elif not isinstance(axes, (list, tuple)):
-        axes = [axes]
-    for ax in axes:
-        ax.set_facecolor(CHART_BG)
-        ax.title.set_color(INK)
-        ax.xaxis.label.set_color(INK)
-        ax.yaxis.label.set_color(INK)
-        ax.tick_params(colors=INK)
-        for spine in ax.spines.values():
-            spine.set_color(INK)
+def _fmt_avg(value: float) -> str:
+    """Format an average-exposure figure, or 'n/a' if it's NaN (no before/after window to average)."""
+    return f"{value:.1f}" if pd.notna(value) else "n/a"
 
 
-def print_report(exposure_trend, trajectory, effectiveness, score: dict) -> None:
+def print_report(trajectory, effectiveness, score: dict) -> None:
     print("=" * 64)
     print("RISK TREND REPORT")
     print("=" * 64)
@@ -95,8 +74,8 @@ def print_report(exposure_trend, trajectory, effectiveness, score: dict) -> None
     print("MITIGATION EFFECTIVENESS")
     print("-" * 64)
     for _, row in effectiveness.iterrows():
-        before = f"{row['avg_exposure_before']:.1f}" if row["avg_exposure_before"] == row["avg_exposure_before"] else "n/a"
-        after = f"{row['avg_exposure_after']:.1f}" if row["avg_exposure_after"] == row["avg_exposure_after"] else "n/a"
+        before = _fmt_avg(row["avg_exposure_before"])
+        after = _fmt_avg(row["avg_exposure_after"])
         print(f"  {row['risk_id']:<5} [{row['verdict']:<18}] "
               f"avg before {before}  avg after {after}  {row['description']}")
 
@@ -104,31 +83,31 @@ def print_report(exposure_trend, trajectory, effectiveness, score: dict) -> None
 def chart_exposure_trend(exposure_trend) -> None:
     fig, ax = plt.subplots(figsize=(9, 5))
     ax.plot(exposure_trend["snapshot_date"].to_numpy(), exposure_trend["total_exposure"].to_numpy(),
-            color=SERIES_1, linewidth=2, marker="o")
+            color=chart_style.SERIES_1, linewidth=2, marker="o")
     ax.set_ylabel("Total portfolio exposure (sum of probability x impact)")
     ax.set_title("Portfolio Risk Exposure Over Time")
-    ax.grid(color=GRID, linewidth=0.6)
-    _apply_chrome(fig, ax)
+    ax.grid(color=chart_style.GRID, linewidth=0.6)
+    chart_style.apply_chrome(fig, ax)
     fig.autofmt_xdate()
     fig.tight_layout()
-    fig.savefig(os.path.join(ASSETS_DIR, "exposure_trend.png"), dpi=140, facecolor=CHART_BG)
+    fig.savefig(os.path.join(ASSETS_DIR, "exposure_trend.png"), dpi=140, facecolor=chart_style.CHART_BG)
     plt.close(fig)
 
 
 def chart_trajectory(trajectory) -> None:
     fig, ax = plt.subplots(figsize=(8, 7))
+    span = 0.6
     label_offsets = {}
     for value, idx in trajectory.groupby("last_exposure").groups.items():
         idx = list(idx)
-        span = 0.6
         for j, i in enumerate(idx):
-            label_offsets[i] = (j - (len(idx) - 1) / 2) * span if len(idx) > 1 else 0
+            label_offsets[i] = (j - (len(idx) - 1) / 2) * span
 
-    for i, row in trajectory.iterrows():
-        color = TREND_COLORS[row["trend"]]
-        ax.plot([0, 1], [row["first_exposure"], row["last_exposure"]], color=color,
+    for i, row in enumerate(trajectory.itertuples()):
+        color = TREND_COLORS[row.trend]
+        ax.plot([0, 1], [row.first_exposure, row.last_exposure], color=color,
                 linewidth=2, marker="o")
-        ax.annotate(row["risk_id"], (1.02, row["last_exposure"] + label_offsets[i]), fontsize=8, va="center")
+        ax.annotate(row.risk_id, (1.02, row.last_exposure + label_offsets[i]), fontsize=8, va="center")
     ax.set_xlim(-0.15, 1.3)
     ax.set_xticks([0, 1])
     ax.set_xticklabels(["First snapshot", "Latest snapshot"])
@@ -136,10 +115,10 @@ def chart_trajectory(trajectory) -> None:
     ax.set_title("Per-Risk Trajectory: First vs Latest Exposure")
     handles = [plt.Line2D([0], [0], color=c, linewidth=2, label=k) for k, c in TREND_COLORS.items()]
     ax.legend(handles=handles, loc="upper left", fontsize=8)
-    ax.grid(color=GRID, linewidth=0.6, axis="y")
-    _apply_chrome(fig, ax)
+    ax.grid(color=chart_style.GRID, linewidth=0.6, axis="y")
+    chart_style.apply_chrome(fig, ax)
     fig.tight_layout()
-    fig.savefig(os.path.join(ASSETS_DIR, "trajectory.png"), dpi=140, facecolor=CHART_BG)
+    fig.savefig(os.path.join(ASSETS_DIR, "trajectory.png"), dpi=140, facecolor=chart_style.CHART_BG)
     plt.close(fig)
 
 
@@ -148,7 +127,7 @@ def chart_effectiveness(effectiveness) -> None:
     fig, ax = plt.subplots(figsize=(9, 5))
     x = range(len(ranked))
     width = 0.35
-    ax.bar([i - width / 2 for i in x], ranked["avg_exposure_before"], width, color=BASELINE)
+    ax.bar([i - width / 2 for i in x], ranked["avg_exposure_before"], width, color=chart_style.BASELINE)
     colors = [VERDICT_COLORS[v] for v in ranked["verdict"]]
     ax.bar([i + width / 2 for i in x], ranked["avg_exposure_after"], width, color=colors)
     ax.set_xticks(list(x))
@@ -157,13 +136,13 @@ def chart_effectiveness(effectiveness) -> None:
     ax.set_title("Mitigation Effectiveness (color = verdict on the 'after' bar)")
     ymin, ymax = ax.get_ylim()
     ax.set_ylim(ymin, ymax * 1.3)  # headroom so the legend doesn't sit on top of the tallest bar
-    handles = [plt.Rectangle((0, 0), 1, 1, color=BASELINE, label="Avg exposure before due date")]
+    handles = [plt.Rectangle((0, 0), 1, 1, color=chart_style.BASELINE, label="Avg exposure before due date")]
     handles += [plt.Rectangle((0, 0), 1, 1, color=c, label=k) for k, c in VERDICT_COLORS.items()]
     ax.legend(handles=handles, loc="upper left", fontsize=8)
-    ax.grid(color=GRID, linewidth=0.6, axis="y")
-    _apply_chrome(fig, ax)
+    ax.grid(color=chart_style.GRID, linewidth=0.6, axis="y")
+    chart_style.apply_chrome(fig, ax)
     fig.tight_layout()
-    fig.savefig(os.path.join(ASSETS_DIR, "mitigation_effectiveness.png"), dpi=140, facecolor=CHART_BG)
+    fig.savefig(os.path.join(ASSETS_DIR, "mitigation_effectiveness.png"), dpi=140, facecolor=chart_style.CHART_BG)
     plt.close(fig)
 
 
@@ -180,7 +159,7 @@ def _escape_md_cell(value) -> str:
     return text.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
 
 
-def write_report_markdown(exposure_trend, trajectory, effectiveness, score: dict) -> None:
+def write_report_markdown(trajectory, effectiveness, score: dict) -> None:
     lines = [
         "# Risk Trend Report",
         "",
@@ -216,8 +195,8 @@ def write_report_markdown(exposure_trend, trajectory, effectiveness, score: dict
               "| Risk | Verdict | Avg Before | Avg After | Description |",
               "|---|---|---|---|---|"]
     for _, row in effectiveness.iterrows():
-        before = f"{row['avg_exposure_before']:.1f}" if row["avg_exposure_before"] == row["avg_exposure_before"] else "n/a"
-        after = f"{row['avg_exposure_after']:.1f}" if row["avg_exposure_after"] == row["avg_exposure_after"] else "n/a"
+        before = _fmt_avg(row["avg_exposure_before"])
+        after = _fmt_avg(row["avg_exposure_after"])
         lines.append(
             f"| {row['risk_id']} | {row['verdict']} | {before} | {after} "
             f"| {_escape_md_cell(row['description'])} |"
@@ -238,12 +217,12 @@ def main() -> None:
     effectiveness = metrics.mitigation_effectiveness(snapshots)
     score = metrics.risk_trajectory_score(exposure_trend, effectiveness, snapshots)
 
-    print_report(exposure_trend, trajectory, effectiveness, score)
+    print_report(trajectory, effectiveness, score)
 
     chart_exposure_trend(exposure_trend)
     chart_trajectory(trajectory)
     chart_effectiveness(effectiveness)
-    write_report_markdown(exposure_trend, trajectory, effectiveness, score)
+    write_report_markdown(trajectory, effectiveness, score)
 
     print()
     print("-" * 64)
