@@ -97,17 +97,20 @@ def chart_exposure_trend(exposure_trend) -> None:
 def chart_trajectory(trajectory) -> None:
     fig, ax = plt.subplots(figsize=(8, 7))
     span = 0.6
+    # Keyed by risk_id (the actual business key) rather than positional/index
+    # label, so this doesn't silently depend on per_risk_trajectory happening
+    # to end with reset_index(drop=True) upstream.
     label_offsets = {}
-    for value, idx in trajectory.groupby("last_exposure").groups.items():
-        idx = list(idx)
-        for j, i in enumerate(idx):
-            label_offsets[i] = (j - (len(idx) - 1) / 2) * span
+    for _, group in trajectory.groupby("last_exposure"):
+        risk_ids = list(group["risk_id"])
+        for j, risk_id in enumerate(risk_ids):
+            label_offsets[risk_id] = (j - (len(risk_ids) - 1) / 2) * span
 
-    for i, row in enumerate(trajectory.itertuples()):
+    for row in trajectory.itertuples():
         color = TREND_COLORS[row.trend]
         ax.plot([0, 1], [row.first_exposure, row.last_exposure], color=color,
                 linewidth=2, marker="o")
-        ax.annotate(row.risk_id, (1.02, row.last_exposure + label_offsets[i]), fontsize=8, va="center")
+        ax.annotate(row.risk_id, (1.02, row.last_exposure + label_offsets[row.risk_id]), fontsize=8, va="center")
     ax.set_xlim(-0.15, 1.3)
     ax.set_xticks([0, 1])
     ax.set_xticklabels(["First snapshot", "Latest snapshot"])
@@ -215,7 +218,7 @@ def main() -> None:
     latest_snapshot = snapshots["snapshot_date"].max()
     trajectory = metrics.per_risk_trajectory(snapshots, latest_snapshot)
     effectiveness = metrics.mitigation_effectiveness(snapshots)
-    score = metrics.risk_trajectory_score(exposure_trend, effectiveness, snapshots)
+    score = metrics.risk_trajectory_score(effectiveness, snapshots)
 
     print_report(trajectory, effectiveness, score)
 
