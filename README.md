@@ -1,5 +1,7 @@
 # Risk Trend & Mitigation Tracker
 
+![CI](https://github.com/alexc-hue/risk-trend-tracker/actions/workflows/tests.yml/badge.svg)
+
 Operationalizes risk management as a tracked trend, not a static register.
 Reads a project's risk log as a series of monthly snapshots and answers what
 a single point-in-time view can't: is overall exposure rising or falling,
