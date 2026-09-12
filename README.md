@@ -1,6 +1,6 @@
 # Risk Trend & Mitigation Tracker
 
-![CI](https://github.com/alexc-hue/risk-trend-tracker/actions/workflows/tests.yml/badge.svg)
+![CI](https://github.com/alexc-hue/risk-trend-tracker/actions/workflows/tests.yml/badge.svg) [![codecov](https://codecov.io/gh/alexc-hue/risk-trend-tracker/graph/badge.svg)](https://codecov.io/gh/alexc-hue/risk-trend-tracker) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
 
 Operationalizes risk management as a tracked trend, not a static register.
 Reads a project's risk log as a series of monthly snapshots and answers what
