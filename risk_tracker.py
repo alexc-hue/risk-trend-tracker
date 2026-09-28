@@ -94,7 +94,32 @@ def chart_exposure_trend(exposure_trend) -> None:
     plt.close(fig)
 
 
+# Charts show at most this many risks. Past a few dozen, labels overlap and
+# drawing each risk separately is what made large registers slow. The full
+# lists are always in the console report and assets/report.md.
+CHART_TOP_N = 30
+
+
+def _largest_moves(trajectory):
+    """The CHART_TOP_N risks whose exposure moved most, in their original order."""
+    if len(trajectory) <= CHART_TOP_N:
+        return trajectory
+    keep = trajectory["delta"].abs().sort_values(ascending=False, kind="stable").index[:CHART_TOP_N]
+    return trajectory.loc[trajectory.index.isin(keep)]
+
+
+def _highest_before(effectiveness):
+    """The CHART_TOP_N risks with the highest average exposure before the due date."""
+    if len(effectiveness) <= CHART_TOP_N:
+        return effectiveness
+    keep = effectiveness["avg_exposure_before"].sort_values(
+        ascending=False, kind="stable", na_position="last").index[:CHART_TOP_N]
+    return effectiveness.loc[effectiveness.index.isin(keep)]
+
+
 def chart_trajectory(trajectory) -> None:
+    total = len(trajectory)
+    trajectory = _largest_moves(trajectory)
     fig, ax = plt.subplots(figsize=(8, 7))
     span = 0.6
     # Keyed by risk_id (the actual business key) rather than positional/index
@@ -115,7 +140,10 @@ def chart_trajectory(trajectory) -> None:
     ax.set_xticks([0, 1])
     ax.set_xticklabels(["First snapshot", "Latest snapshot"])
     ax.set_ylabel("Exposure (probability x impact)")
-    ax.set_title("Per-Risk Trajectory: First vs Latest Exposure")
+    title = "Per-Risk Trajectory: First vs Latest Exposure"
+    if len(trajectory) < total:
+        title += f" ({len(trajectory)} largest moves of {total} risks)"
+    ax.set_title(title)
     handles = [plt.Line2D([0], [0], color=c, linewidth=2, label=k) for k, c in TREND_COLORS.items()]
     ax.legend(handles=handles, loc="upper left", fontsize=8)
     ax.grid(color=chart_style.GRID, linewidth=0.6, axis="y")
@@ -126,7 +154,7 @@ def chart_trajectory(trajectory) -> None:
 
 
 def chart_effectiveness(effectiveness) -> None:
-    ranked = effectiveness.sort_values("risk_id")
+    ranked = _highest_before(effectiveness).sort_values("risk_id")
     fig, ax = plt.subplots(figsize=(9, 5))
     x = range(len(ranked))
     width = 0.35
@@ -136,7 +164,10 @@ def chart_effectiveness(effectiveness) -> None:
     ax.set_xticks(list(x))
     ax.set_xticklabels(ranked["risk_id"])
     ax.set_ylabel("Average exposure")
-    ax.set_title("Mitigation Effectiveness (color = verdict on the 'after' bar)")
+    title = "Mitigation Effectiveness (color = verdict on the 'after' bar)"
+    if len(ranked) < len(effectiveness):
+        title += f" ({len(ranked)} highest pre-mitigation exposure of {len(effectiveness)})"
+    ax.set_title(title)
     ymin, ymax = ax.get_ylim()
     ax.set_ylim(ymin, ymax * 1.3)  # headroom so the legend doesn't sit on top of the tallest bar
     handles = [plt.Rectangle((0, 0), 1, 1, color=chart_style.BASELINE, label="Avg exposure before due date")]
