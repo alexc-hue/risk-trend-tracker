@@ -131,3 +131,8 @@ python risk_tracker.py
 
 Swap in your own `data/risk_snapshots.csv` (same columns, one row per risk
 per reporting period) to point it at a real risk register.
+
+To see how it copes with bigger generated risk registers, run `python
+benchmarks/size_test.py`. It prints run time and peak memory at each size.
+It's a hand-run check, not part of the test suite; measured numbers are
+under Limitations.
