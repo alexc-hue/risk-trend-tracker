@@ -121,6 +121,12 @@ register as a time series instead of a recurring point-in-time exercise.
   scores, only tracks how they move. Meant to sit alongside an existing
   RAID log or risk register as the trend layer, not replace it as the
   system of record.
+- Size-tested with `benchmarks/size_test.py` over six monthly snapshots, on
+  a 2018 laptop (Intel i7-8750H, Python 3.14), single runs, so treat the
+  numbers as a guide: 1,000 risks run end to end in about 2 seconds, 10,000
+  in about 6 and 20,000 in about 11. The trajectory and mitigation charts
+  show the 30 risks that moved most or carried the most exposure; the
+  console report and report.md list every risk.
 
 ## Run it
 
