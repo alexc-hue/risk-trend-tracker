@@ -8,12 +8,17 @@ a single point-in-time view can't: is overall exposure rising or falling,
 which specific risks are getting worse despite being "in mitigation," and
 did each mitigation actually work once its due date passed.
 
-Part of a small project-controls toolkit:
+The project-controls toolkit is six tools:
 [project-controls-dashboard](https://github.com/alexc-hue/project-controls-dashboard),
 [schedule-health-analyzer](https://github.com/alexc-hue/schedule-health-analyzer),
 [change-control-register](https://github.com/alexc-hue/change-control-register),
 **risk-trend-tracker** (this repo),
-[project-controls-reporting-engine](https://github.com/alexc-hue/project-controls-reporting-engine).
+[project-controls-reporting-engine](https://github.com/alexc-hue/project-controls-reporting-engine),
+[recovery-scenario-planner](https://github.com/alexc-hue/recovery-scenario-planner).
+Two separate practice models apply the same methods to data center
+delivery, on synthetic data:
+[commissioning-readiness-gate](https://github.com/alexc-hue/commissioning-readiness-gate),
+[facility-status-digital-twin](https://github.com/alexc-hue/facility-status-digital-twin).
 
 ![Exposure trend](assets/exposure_trend.png)
 
@@ -85,16 +90,16 @@ mitigation verdict, is generated alongside the charts: see
 
 ## Screenshots
 
-**Portfolio exposure over time** — total risk exposure by snapshot.
+**Portfolio exposure over time:** total risk exposure by snapshot.
 
 ![Exposure trend](assets/exposure_trend.png)
 
-**Per-risk trajectory** — first vs. latest exposure per risk, colored by
+**Per-risk trajectory:** first vs. latest exposure per risk, colored by
 trend.
 
 ![Trajectory](assets/trajectory.png)
 
-**Mitigation effectiveness** — average exposure before vs. after each
+**Mitigation effectiveness:** average exposure before vs. after each
 risk's mitigation due date.
 
 ![Mitigation effectiveness](assets/mitigation_effectiveness.png)
